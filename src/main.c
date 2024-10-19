@@ -134,6 +134,38 @@ void ShowDetails() {
     }
 }
 
+void ReadCSVAndUpdateSeats(const char *filename, Theatre *theatre, char *moviename) {
+    FILE *file = fopen(filename, "r");
+    if (!file) {
+        printf("Could not open file %s for reading.\n", filename);
+        return;
+    }
+
+    char line[256];
+    while (fgets(line, sizeof(line), file)) {
+        char *token;
+        char movie[50], row;
+        int col;
+        token = strtok(line,",");
+        token = strtok(NULL,",");
+        token = strtok(NULL,",");
+        token = strtok(NULL, ",");
+        if (token) strcpy(movie, token);
+        token = strtok(NULL, ",");
+        if (token) row = token[0];
+        token = strtok(NULL, ",");
+        if (token) col = atoi(token);
+        if (strcmp(movie,moviename) == 0) {
+            int row_index = row - 'A';
+            if (row_index >= 0 && row_index < 10 && col >= 1 && col <= 15) {
+                strcpy(theatre->seats[row_index][col - 1], "[X]");
+            }
+        }
+
+    }
+    fclose(file);
+}
+
 void DisplaySeats(Theatre *theatre) {
     char *empty_seat = "[ ]";
     char *booked_seat = "[X]";
@@ -201,33 +233,62 @@ void Book() {
             printf("   >>> ");
             int n;
             scanf("%d", &n);
-            
+            char movie_chosen[50];
+            int movie_num;
             Theatre *selected_theatre;
+
             switch(n) {
                 case 1:
+                    
                     strcpy(dynamic_array[i].movie_selected, "Dune 2");
+                    strcpy(movie_chosen,"Dune 2");
                     selected_theatre = &one;
                     break;
                 case 2:
                     strcpy(dynamic_array[i].movie_selected, "Transformers One");
+                    strcpy(movie_chosen,"Transformers One");
                     selected_theatre = &two;
                     break;
                 case 3:
                     strcpy(dynamic_array[i].movie_selected, "Oppenheimer");
+                    strcpy(movie_chosen,"Oppenheimer");
                     selected_theatre = &three;
                     break;
                 case 4:
                     strcpy(dynamic_array[i].movie_selected, "Inception");
+                    strcpy(movie_chosen,"Inception");
                     selected_theatre = &four;
                     break;
                 case 5:
                     strcpy(dynamic_array[i].movie_selected, "Tenet");
+                    strcpy(movie_chosen,"Tenet");
                     selected_theatre = &five;
                     break;
                 default:
                     printf("Invalid choice. Booking cancelled.\n");
                     return;
             }
+
+            switch (n){
+                case 1:
+                    ReadCSVAndUpdateSeats("data.csv",&one,movie_chosen);
+                    break;
+                case 2:
+                    ReadCSVAndUpdateSeats("data.csv",&two,movie_chosen);
+                    break;
+                case 3:
+                    ReadCSVAndUpdateSeats("data.csv",&three,movie_chosen);
+                    break;
+                case 4:
+                    ReadCSVAndUpdateSeats("data.csv",&four,movie_chosen);
+                    break;
+                case 5:
+                    ReadCSVAndUpdateSeats("data.csv",&five,movie_chosen);
+                    break;
+                default:
+                    break;
+            }
+            
             
             printf("   You have chosen the movie %s\n", dynamic_array[i].movie_selected);
             printf("   Select a Seat!\n");
