@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-
+#include <ctype.h>
 typedef struct {
     char name[50];
     char email[50];
@@ -22,6 +22,7 @@ Details *dynamic_array = NULL;
 int count = 0;
 
 Theatre one, two, three, four, five;
+
 
 void PrintMenu() {
     printf("\033[1;36m");
@@ -43,26 +44,75 @@ void PrintMenu() {
     printf("\033[0m");
 }
 
+// Function to check if the name contains only letters and spaces
+int validate_name(const char *name) {
+    for (int i = 0; i < strlen(name); i++) {
+        if (!isalpha(name[i]) && name[i] != ' ') {
+            return 0; // Invalid character
+        }
+    }
+    return 1; // Valid name
+}
+
+// Function to validate email with basic checks (can be expanded)
+int validate_email(const char *email) {
+    const char *at = strchr(email, '@');
+    if (at == NULL || strchr(at, '.') == NULL) {
+        return 0; // Invalid email (no @ or no domain)
+    }
+    return 1; // Basic valid email
+}
+
+// Function to validate phone number (digits only)
+int validate_phone(const char *phone) {
+    for (int i = 0; i < strlen(phone); i++) {
+        if (!isdigit(phone[i])) {
+            return 0; // Invalid character (not a digit)
+        }
+    }
+    return 1; // Valid phone number
+}
+
 void InputDetails() {
     Details *temp = realloc(dynamic_array, (count + 1) * sizeof(Details));
     if (temp == NULL) {
-        printf("\n Memory allocation failed !");
+        printf("\nMemory allocation failed!\n");
         return;
     }
     dynamic_array = temp;
 
+    char name[100], email[100], phone[20];
+
+    // Input for Name
     printf("   >>> Enter your name: ");
-    scanf(" %[^\n]", dynamic_array[count].name);
-    getchar();
+    scanf(" %[^\n]", name);
+    if (!validate_name(name)) {
+        printf("Invalid name. Please use only letters and spaces.\n");
+        return; // Exit function if validation fails
+    }
+    strcpy(dynamic_array[count].name, name);
+
+    // Input for Email
     printf("   >>> Enter your email address: ");
-    scanf("%s", dynamic_array[count].email);
-    getchar();
+    scanf("%s", email);
+    if (!validate_email(email)) {
+        printf("Invalid email.\n");
+        return; // Exit function if validation fails
+    }
+    strcpy(dynamic_array[count].email, email);
+
+    // Input for Phone
     printf("   >>> Enter mobile number: ");
-    scanf("%s", dynamic_array[count].mobile);
-    getchar();
+    scanf("%s", phone);
+    if (!validate_phone(phone)) {
+        printf("Invalid phone number. Please enter only digits.\n");
+        return; // Exit function if validation fails
+    }
+    strcpy(dynamic_array[count].mobile, phone);
 
     dynamic_array[count].cancelled = 0;
     count++;
+    printf("Details successfully added!\n");
 }
 
 void ShowDetails() {
@@ -291,10 +341,19 @@ void CancelBooking() {
 int main() {
     // Initialize theatres with movie names
     one.movie_name = strdup("Dune 2");
+    if (one.movie_name == NULL) { printf("Memory allocation failed!\n"); return 1; }
+
     two.movie_name = strdup("Transformers One");
+    if (two.movie_name == NULL) { printf("Memory allocation failed!\n"); return 1; }
+
     three.movie_name = strdup("Oppenheimer");
+    if (three.movie_name == NULL) { printf("Memory allocation failed!\n"); return 1; }
+
     four.movie_name = strdup("Inception");
+    if (four.movie_name == NULL) { printf("Memory allocation failed!\n"); return 1; }
+
     five.movie_name = strdup("Tenet");
+    if (five.movie_name == NULL) { printf("Memory allocation failed!\n"); return 1; }
 
     // Initialize seats as empty
     const char *empty_seat = "[ ]";
@@ -345,8 +404,9 @@ int main() {
         }
     }
 
-    // Free allocated memory
+    // Free allocated memory for dynamic array and movie names
     free(dynamic_array);
+
     free(one.movie_name);
     free(two.movie_name);
     free(three.movie_name);
